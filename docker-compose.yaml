@@ -1,19 +1,42 @@
 services:
+  db:
+    image: postgres:13
+    container_name: pgdb-lab3
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
+      POSTGRES_DB: retail_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data:rw
+    ports:
+      - "9999:5432"
   jupyter:
     image: jupyter/datascience-notebook:latest
-    container_name: lab3-bigquery-jupyter-datascience-notebook
+    container_name: jupyter-lab3
     volumes:
       - ".:/home/jovyan/work:rw"
     ports:
-      - "6565:8888"
+      - "6565:7777"
     command: >
       bash -c " pip install psycopg2-binary 
       && pip install ipython-sql 
       && pip install sqlalchemy
-      && pip install --upgrade google-cloud-bigquery
-      && pip install --upgrade google-cloud-storage
-      && pip install pandas-gbq
-      && pip install db-dtypes
-      && pip install pandas-gbq
       && pip install matplotlib
-      && start-notebook.sh --NotebookApp.token='1234'"
+      && pip install pyarrow
+      && pip install pytest
+      && start-notebook.sh --NotebookApp.token='1234' --port=7777"
+  hue:
+    image: gethue/hue:latest
+    hostname: hue
+    container_name: hue-lab3
+    dns: 8.8.8.8
+    ports:
+      - "8088:8888"
+    volumes:
+      - ./hue.ini:/usr/share/hue/desktop/conf/z-hue.ini
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
+
